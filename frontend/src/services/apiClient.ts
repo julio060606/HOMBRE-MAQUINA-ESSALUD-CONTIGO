@@ -67,6 +67,22 @@ export const resetDemoData = async () => {
 /* ============================================================================
  * 1. SERVICIO DE AUTENTICACIÓN REAL (POST /api/v1/auth/...)
  * ============================================================================ */
+// Función de ayuda para procesar respuestas de red de forma segura sin SyntaxError
+async function safeJson<T = any>(res: Response): Promise<T> {
+  const text = await res.text();
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { error: text ? text.slice(0, 200) : `Error HTTP ${res.status}` };
+  }
+  if (!res.ok) {
+    const errorMsg = data?.error || data?.message || data?.details || `Error HTTP ${res.status}: ${res.statusText || 'Fallo en la comunicación con el servidor'}`;
+    throw new Error(errorMsg);
+  }
+  return data as T;
+}
+
 export const authService = {
   async login(email: string, password: string): Promise<{ user: User; token: string }> {
     const res = await fetch(`${ENV.API_BASE_URL}/auth/login`, {
@@ -75,7 +91,7 @@ export const authService = {
       body: JSON.stringify({ email, password })
     });
 
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Credenciales incorrectas. Verifique correo y contraseña.');
     }
@@ -89,7 +105,7 @@ export const authService = {
       body: JSON.stringify({ email, password, name })
     });
 
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al registrar la cuenta en EsSalud Contigo.');
     }
@@ -106,7 +122,7 @@ export const patientService = {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: No se pudo conectar con el servidor de pacientes.`);
     }
-    const data = await res.json();
+    const data = await safeJson(res);
     return data.map((p: any) => ({
       id: p.id,
       dni: p.dni,
@@ -130,7 +146,7 @@ export const patientService = {
     if (!res.ok) {
       throw new Error(`No se encontró el paciente con ID ${id}`);
     }
-    const p = await res.json();
+    const p = await safeJson(res);
     return {
       id: p.id,
       dni: p.dni,
@@ -156,7 +172,7 @@ export const patientService = {
       body: JSON.stringify({ codigo: codigo.trim() })
     });
     
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Código familiar no encontrado en la base de datos.');
     }
@@ -199,7 +215,7 @@ export const appointmentService = {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: Fallo al consultar citas en EsSalud.`);
     }
-    const data = await res.json();
+    const data = await safeJson(res);
     return data.map((c: any) => ({
       id: c.id,
       patientId: c.paciente_id,
@@ -231,7 +247,7 @@ export const appointmentService = {
       })
     });
     
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al agendar la cita médica.');
     }
@@ -249,7 +265,7 @@ export const appointmentService = {
         fecha_hora: details?.dateTime
       })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al confirmar disponibilidad médica.');
     }
@@ -275,7 +291,7 @@ export const medicationService = {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: No se pudieron obtener las recetas.`);
     }
-    const data = await res.json();
+    const data = await safeJson(res);
     return data.map((r: any) => {
       const freq = Number(r.frecuencia_horas) || 24;
       let times = ['08:00'];
@@ -343,7 +359,7 @@ export const medicationService = {
         stock_actual: 30
       })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al registrar receta médica.');
     }
@@ -371,7 +387,7 @@ export const medicationService = {
 
   async toggleMedicationStatus(id: string): Promise<any> {
     const res = await fetch(`${ENV.API_BASE_URL}/prescriptions/${id}/toggle`, { method: 'PATCH' });
-    const data = await res.json();
+    const data = await safeJson(res);
     syncEvents.emit({ type: 'MEDICATION_TOGGLED' });
     return data;
   },
@@ -381,7 +397,7 @@ export const medicationService = {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: Fallo al obtener tomas de hoy.`);
     }
-    const data = await res.json();
+    const data = await safeJson(res);
     return data.map((t: any) => ({
       id: t.id,
       medicationId: t.receta_id,
@@ -403,7 +419,7 @@ export const medicationService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ confirmado_por: confirmedVia })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al confirmar la toma de medicamento.');
     }
@@ -417,7 +433,7 @@ export const medicationService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ motivo: reason })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al marcar la toma como omitida.');
     }
@@ -427,7 +443,7 @@ export const medicationService = {
 
   async confirmPickup(recetaId: string): Promise<any> {
     const res = await fetch(`${ENV.API_BASE_URL}/prescriptions/${recetaId}/confirm-pickup`, { method: 'POST' });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al confirmar recojo en farmacia.');
     }
@@ -441,7 +457,7 @@ export const medicationService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stock })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al indicar medicamento en casa.');
     }
@@ -455,7 +471,7 @@ export const medicationService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ motivo })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al reportar desabastecimiento.');
     }
@@ -486,7 +502,7 @@ export const medicationService = {
         ipress_farmacia: medData?.pharmacy
       })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al emitir prescripción médica.');
     }
@@ -500,7 +516,7 @@ export const medicationService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cantidad })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al reponer stock de pastillas.');
     }
@@ -512,7 +528,7 @@ export const medicationService = {
     const res = await fetch(`${ENV.API_BASE_URL}/patients/${patientId}/intakes/reset-today`, {
       method: 'POST'
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al reiniciar tomas.');
     }
@@ -530,7 +546,7 @@ export const vitalsService = {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: Fallo al consultar registros de presión arterial.`);
     }
-    const data = await res.json();
+    const data = await safeJson(res);
     return data.map((v: any) => ({
       id: v.id,
       patientId: v.paciente_id,
@@ -565,7 +581,7 @@ export const vitalsService = {
         registrado_via: log.recordedVia || 'APP_PACIENTE'
       })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al registrar presión arterial.');
     }
@@ -583,7 +599,7 @@ export const alertService = {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: No se pudieron cargar las alertas clínicas.`);
     }
-    const data = await res.json();
+    const data = await safeJson(res);
     return data.map((a: any) => ({
       id: a.id,
       patientId: a.paciente_id,
@@ -606,7 +622,7 @@ export const alertService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ paciente_id: patientId, notas: notes })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al enviar alerta SOS.');
     }
@@ -632,7 +648,7 @@ export const alertService = {
         tipo: alert.type || 'MISSED_MEDICATION'
       })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al registrar alerta clínica.');
     }
@@ -650,7 +666,7 @@ export const alertService = {
         notas: details?.notas || ''
       })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al marcar alerta como atendida.');
     }
@@ -664,7 +680,7 @@ export const alertService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ motivo, notas })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al descartar alerta.');
     }
@@ -674,7 +690,7 @@ export const alertService = {
 
   async deleteAlert(alertId: string): Promise<any> {
     const res = await fetch(`${ENV.API_BASE_URL}/alerts/${alertId}`, { method: 'DELETE' });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al eliminar alerta.');
     }
@@ -692,7 +708,7 @@ export const alertService = {
         notas: details?.notas || 'Emergencia atendida por el cuidador'
       })
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
       throw new Error(data.error || 'Error al resolver las alertas de auxilio SOS.');
     }
@@ -705,7 +721,7 @@ export const alertService = {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: Fallo al consultar resumen del dashboard.`);
     }
-    const data = await res.json();
+    const data = await safeJson(res);
     return {
       adherenciaHoy: data.adherenciaHoy,
       dosisTomadas: data.dosisTomadas,
@@ -756,7 +772,7 @@ export const settingsService = {
     try {
       const res = await fetch(`${ENV.API_BASE_URL}/patients/${patientId}/settings`);
       if (res.ok) {
-        const data = await res.json();
+        const data = await safeJson(res);
         return {
           patientId: data.patientId,
           systolicMaxNormal: Number(data.systolicMaxNormal) || 140,
@@ -807,7 +823,7 @@ export const settingsService = {
       throw new Error(errData.error || 'Error al guardar los ajustes en el servidor.');
     }
 
-    const data = await res.json();
+    const data = await safeJson(res);
     syncEvents.emit({ type: 'SETTINGS_UPDATED', patientId: settings.patientId, settings });
     return data.settings || settings;
   }

@@ -24,9 +24,11 @@ app.get('/health', (_req, res) => {
 app.use('/api/v1', apiRoutes_1.default);
 app.use('/api', apiRoutes_1.default);
 app.use('/', apiRoutes_1.default);
-// Arranque del servidor - Siempre debe escuchar en el puerto asignado (Vercel Services o Local)
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor EsSalud Contigo corriendo en http://localhost:${PORT}`);
-    console.log(`📡 Endpoints REST listos bajo /api/v1`);
-});
+// Arranque del servidor - Solo escuchar si se ejecuta localmente (en Vercel actúa como runtime serverless)
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Servidor EsSalud Contigo corriendo en http://localhost:${PORT}`);
+        console.log(`📡 Endpoints REST listos bajo /api/v1`);
+    });
+}
 exports.default = app;
