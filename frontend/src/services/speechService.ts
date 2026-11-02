@@ -137,8 +137,11 @@ class SpeechService {
    * Obtiene la lista completa de voces instaladas en el navegador/sistema
    */
   public getAllVoices(): SpeechSynthesisVoice[] {
-    if (this.voices.length === 0 && typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      this.voices = window.speechSynthesis.getVoices();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const live = window.speechSynthesis.getVoices();
+      if (live && live.length > 0) {
+        this.voices = live;
+      }
     }
     return this.voices;
   }
@@ -153,64 +156,95 @@ class SpeechService {
       const name = v.name.toLowerCase();
       return (
         lang.startsWith('es') ||
-        lang.includes('spanish') ||
+        lang.includes('-es') ||
+        lang.includes('_es') ||
+        lang.includes('spa') ||
         name.includes('spanish') ||
         name.includes('español') ||
+        name.includes('mexico') ||
+        name.includes('peru') ||
+        name.includes('colombia') ||
+        name.includes('latino') ||
         name.includes('sabina') ||
         name.includes('elena') ||
         name.includes('raul') ||
         name.includes('jorge') ||
         name.includes('hilda') ||
-        name.includes('dalia')
+        name.includes('dalia') ||
+        name.includes('camila') ||
+        name.includes('salome')
       );
     });
   }
 
   /**
-   * Prioriza la mejor voz en español latinoamericano o peninsular
+   * Prioriza la mejor voz en español latinoamericano (Perú, Latam, México)
+   * NUNCA devuelve una voz en inglés ni ningún idioma no-español.
    */
   public findBestSpanishVoice(): SpeechSynthesisVoice | null {
     const spanishVoices = this.getSpanishVoices();
     if (spanishVoices.length === 0) {
-      // Si el navegador no tiene ninguna voz explícita en español, usar la primera por defecto
-      return this.voices.find(v => v.default) || this.voices[0] || null;
+      // IMPORTANTE: Si aún no hay voces en español cargadas, retornar null.
+      // NUNCA retornar this.voices[0] (que suele ser un sintetizador en inglés en Windows).
+      return null;
     }
 
-    // 1. Prioridad: Español Perú (es-PE)
-    const pe = spanishVoices.find(v => v.lang.toLowerCase().includes('pe'));
+    // 1. Máxima Prioridad: Español Perú (es-PE o 'Camila' / 'Peru')
+    const pe = spanishVoices.find(v => 
+      v.lang.toLowerCase().includes('pe') || 
+      v.name.toLowerCase().includes('peru')
+    );
     if (pe) return pe;
 
-    // 2. Prioridad: Español Latinoamérica (es-419)
-    const latam = spanishVoices.find(v => v.lang.toLowerCase().includes('419'));
+    // 2. Prioridad: Español Latinoamérica (es-419) o Natural Online Latam
+    const latam = spanishVoices.find(v => 
+      v.lang.toLowerCase().includes('419') ||
+      (v.name.toLowerCase().includes('natural') && (v.lang.toLowerCase().includes('mx') || v.lang.toLowerCase().includes('co')))
+    );
     if (latam) return latam;
 
     // 3. Prioridad: Español México (es-MX) o Estados Unidos (es-US)
-    const mx = spanishVoices.find(v => v.lang.toLowerCase().includes('mx') || v.lang.toLowerCase().includes('us'));
+    const mx = spanishVoices.find(v => 
+      v.lang.toLowerCase().includes('mx') || 
+      v.name.toLowerCase().includes('sabina') ||
+      v.name.toLowerCase().includes('dalia') ||
+      v.name.toLowerCase().includes('raul') ||
+      v.lang.toLowerCase().includes('us')
+    );
     if (mx) return mx;
 
-    // 4. Prioridad: Voces naturales de Google o Microsoft en español
-    const natural = spanishVoices.find(v => 
-      v.name.toLowerCase().includes('natural') || 
-      v.name.toLowerCase().includes('google') ||
-      v.name.toLowerCase().includes('sabina') ||
-      v.name.toLowerCase().includes('dalia')
+    // 4. Prioridad: Voces de Google en Español o cualquier voz en español latino
+    const googleEs = spanishVoices.find(v => 
+      v.name.toLowerCase().includes('google') && 
+      (v.lang.toLowerCase().startsWith('es') || v.name.toLowerCase().includes('español'))
     );
-    if (natural) return natural;
+    if (googleEs) return googleEs;
 
-    // 5. Cualquier otra voz en español (ej. es-ES de España)
-    return spanishVoices[0];
+    // 5. Voces de Colombia, Argentina, Chile
+    const otherLatam = spanishVoices.find(v =>
+      v.lang.toLowerCase().includes('co') ||
+      v.lang.toLowerCase().includes('ar') ||
+      v.lang.toLowerCase().includes('cl')
+    );
+    if (otherLatam) return otherLatam;
+
+    // 6. Cualquier otra voz en español (ej. es-ES)
+    return spanishVoices[0] || null;
   }
 
   public getSelectedVoice(): SpeechSynthesisVoice | null {
-    if (!this.selectedVoice) {
+    // Si la voz actual no es en español o es nula, refrescar búsqueda
+    if (!this.selectedVoice || !this.selectedVoice.lang.toLowerCase().startsWith('es')) {
       this.selectedVoice = this.findBestSpanishVoice();
     }
     return this.selectedVoice;
   }
 
   public setVoice(voice: SpeechSynthesisVoice) {
-    this.selectedVoice = voice;
-    this.notify();
+    if (voice && (voice.lang.toLowerCase().startsWith('es') || voice.name.toLowerCase().includes('spanish'))) {
+      this.selectedVoice = voice;
+      this.notify();
+    }
   }
 
   /**
@@ -245,18 +279,19 @@ class SpeechService {
       utterance.voice = voice;
       utterance.lang = voice.lang;
     } else {
-      // Fallback genérico a español si ninguna voz específica fue detectada
-      utterance.lang = 'es-ES';
+      // Fallback estricto a Español Latinoamericano para que el navegador
+      // descargue o asigne obligatoriamente un motor de voz en español
+      utterance.lang = 'es-419';
     }
 
     // Configuración ergonómica para adultos mayores:
-    // Rate 0.88 es un 12% más pausado que la velocidad humana normal, facilitando comprensión.
-    utterance.rate = options?.rate ?? 0.88;
+    // Rate 0.82 es una cadencia pausada y sosegada, ideal para dicción clara.
+    utterance.rate = options?.rate ?? 0.82;
     utterance.pitch = options?.pitch ?? 1.0;
     utterance.volume = options?.volume ?? 1.0;
 
     // Pequeño retardo si hubo campanita para que no se superpongan
-    const delay = options?.playChimeBefore ? 350 : 50;
+    const delay = options?.playChimeBefore ? 350 : 60;
     setTimeout(() => {
       window.speechSynthesis.speak(utterance);
     }, delay);
