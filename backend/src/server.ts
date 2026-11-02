@@ -5,8 +5,8 @@ import apiRoutes from './routes/apiRoutes';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Middlewares globales
-app.use(cors());
+// Middlewares globales con CORS permisivo para Vercel
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // Endpoint de verificación de salud (Health Check)
@@ -19,15 +19,15 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// Rutas principales del sistema
+// Rutas principales del sistema - Resiliente ante reescrituras de Vercel
 app.use('/api/v1', apiRoutes);
+app.use('/api', apiRoutes);
+app.use('/', apiRoutes);
 
-// Arranque del servidor local (solo si no es entorno serverless de Vercel)
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Servidor EsSalud Contigo corriendo en http://localhost:${PORT}`);
-    console.log(`📡 Endpoints REST disponibles bajo http://localhost:${PORT}/api/v1`);
-  });
-}
+// Arranque del servidor - Siempre debe escuchar en el puerto asignado (Vercel Services o Local)
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor EsSalud Contigo corriendo en http://localhost:${PORT}`);
+  console.log(`📡 Endpoints REST listos bajo /api/v1`);
+});
 
 export default app;

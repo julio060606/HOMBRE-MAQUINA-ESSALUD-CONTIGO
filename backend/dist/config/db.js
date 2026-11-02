@@ -10,7 +10,8 @@ const dotenv_1 = __importDefault(require("dotenv"));
 // Cargar variables de entorno desde el archivo .env raíz
 dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../../../.env') });
 dotenv_1.default.config(); // Fallback a directorio actual
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL ||
+    'postgresql://postgres:kKmpObbYG0XY5VSa@db.liozqlizpovzlgmzjiic.supabase.co:5432/postgres';
 if (!connectionString) {
     console.warn('⚠️ Advertencia: DATABASE_URL no encontrada en variables de entorno.');
 }

@@ -6,7 +6,9 @@ import dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config(); // Fallback a directorio actual
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = 
+  process.env.DATABASE_URL || 
+  'postgresql://postgres:kKmpObbYG0XY5VSa@db.liozqlizpovzlgmzjiic.supabase.co:5432/postgres';
 
 if (!connectionString) {
   console.warn('⚠️ Advertencia: DATABASE_URL no encontrada en variables de entorno.');
