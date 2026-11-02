@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 360" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EBF4FD" />
+      <stop offset="100%" stop-color="#E8F8EE" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo Geométrico Suave (Corporate Memphis) -->
+  <rect x="0" y="0" width="500" height="360" rx="28" fill="url(#bgGlow)" />
+  <circle cx="420" cy="80" r="48" fill="#D3E8FB" opacity="0.7" />
+  <circle cx="80" cy="280" r="60" fill="#DCFCE7" opacity="0.8" />
+  <path d="M380 260 C400 240, 440 240, 460 260 C480 280, 460 320, 420 320 C380 320, 360 280, 380 260 Z" fill="#BAE0FD" opacity="0.5" />
+
+  <!-- Paciente Adulto Mayor (Estilo Memphis: geométrico, digno, empático) -->
+  <g transform="translate(110, 70)">
+    <!-- Cuerpo / Chaqueta Azul Suave -->
+    <rect x="30" y="110" width="90" height="130" rx="35" fill="#005CA9" />
+    <path d="M40 110 L75 145 L110 110" fill="#FFFFFF" opacity="0.9" />
+    
+    <!-- Cuello y Cabeza -->
+    <rect x="65" y="85" width="20" height="28" fill="#F8CBA6" rx="6" />
+    <circle cx="75" cy="55" r="34" fill="#F8CBA6" />
+    
+    <!-- Cabello Canoso / Gafas Circulares -->
+    <path d="M42 50 C42 25, 108 25, 108 50 C108 35, 95 20, 75 20 C55 20, 42 35, 42 50 Z" fill="#E2E8F0" />
+    <!-- Lentes Verdes EsSalud -->
+    <circle cx="63" cy="55" r="9" fill="none" stroke="#009B3A" stroke-width="2.5" />
+    <circle cx="87" cy="55" r="9" fill="none" stroke="#009B3A" stroke-width="2.5" />
+    <line x1="72" y1="55" x2="78" y2="55" stroke="#009B3A" stroke-width="2.5" />
+    <!-- Sonrisa amigable -->
+    <path d="M68 70 Q75 76 82 70" fill="none" stroke="#64748B" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Teléfono Móvil Asistivo en Mano -->
+    <rect x="100" y="140" width="36" height="60" rx="8" fill="#1E293B" />
+    <rect x="104" y="146" width="28" height="46" rx="4" fill="#009B3A" />
+    <!-- Botón Check Blanco en Teléfono -->
+    <path d="M112 168 L117 173 L126 163" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+  <!-- Médica / Cuidadora EsSalud (Chaqueta Médica Blanca, Estetoscopio) -->
+  <g transform="translate(250, 60)">
+    <!-- Cuerpo / Bata Médica Blanca con bordes azules -->
+    <rect x="35" y="120" width="95" height="130" rx="35" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+    <!-- Camisa Azul EsSalud interior -->
+    <path d="M60 120 L82 150 L105 120 Z" fill="#005CA9" />
+    
+    <!-- Estetoscopio EsSalud Verde -->
+    <path d="M65 130 C65 170, 100 170, 100 130" fill="none" stroke="#009B3A" stroke-width="3.5" stroke-linecap="round" />
+    <circle cx="83" cy="180" r="6" fill="#009B3A" />
+    
+    <!-- Cabeza y Cabello -->
+    <rect x="72" y="95" width="20" height="28" fill="#E8B298" rx="6" />
+    <circle cx="82" cy="65" r="32" fill="#E8B298" />
+    <!-- Cabello Recogido Oscuro -->
+    <path d="M50 65 C50 35, 114 35, 114 65 C114 42, 100 30, 82 30 C64 30, 50 42, 50 65 Z" fill="#334155" />
+    <circle cx="82" cy="24" r="14" fill="#334155" />
+    
+    <!-- Ojos y Sonrisa Empática -->
+    <circle cx="73" cy="65" r="2.5" fill="#334155" />
+    <circle cx="91" cy="65" r="2.5" fill="#334155" />
+    <path d="M76 77 Q82 83 88 77" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Portapapeles con Receta Digital EsSalud -->
+    <rect x="15" y="150" width="40" height="55" rx="6" fill="#005CA9" />
+    <rect x="20" y="156" width="30" height="42" rx="3" fill="#FFFFFF" />
+    <line x1="25" y1="166" x2="45" y2="166" stroke="#005CA9" stroke-width="2" stroke-linecap="round" />
+    <line x1="25" y1="174" x2="42" y2="174" stroke="#009B3A" stroke-width="2" stroke-linecap="round" />
+    <line x1="25" y1="182" x2="38" y2="182" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" />
+  </g>
+
+  <!-- Elementos Flotantes de Salud (Corazón, Pastilla, Escudo) -->
+  <g transform="translate(40, 40)">
+    <circle cx="30" cy="30" r="20" fill="#FFFFFF" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.06))" />
+    <!-- Corazón Rojo/Rosa -->
+    <path d="M30 36 C30 36, 20 29, 20 23 C20 19, 23 17, 26 17 C28 17, 30 19, 30 19 C30 19, 32 17, 34 17 C37 17, 40 19, 40 23 C40 29, 30 36, 30 36 Z" fill="#EF4444" />
+  </g>
+
+  <g transform="translate(410, 180)">
+    <circle cx="30" cy="30" r="22" fill="#FFFFFF" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.06))" />
+    <!-- Pastilla Bicolor Azul/Verde -->
+    <rect x="16" y="24" width="28" height="12" rx="6" fill="#005CA9" />
+    <rect x="30" y="24" width="14" height="12" rx="0" fill="#009B3A" />
+    <path d="M44 24 C47 24, 47 36, 44 36 Z" fill="#009B3A" />
+  </g>
+</svg>
