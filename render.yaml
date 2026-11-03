@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: essalud-contigo-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: postgresql://postgres.liozqlizpovzlgmzjiic:kKmpObbYG0XY5VSa@aws-1-us-west-2.pooler.supabase.com:6543/postgres
