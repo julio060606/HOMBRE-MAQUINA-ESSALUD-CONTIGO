@@ -32,4 +32,10 @@ if (!process.env.VERCEL) {
   });
 }
 
+// Exportar para compatibilidad universal con Vercel Serverless (@vercel/node, CommonJS y ESM)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = app;
+  module.exports.default = app;
+}
+
 export default app;
