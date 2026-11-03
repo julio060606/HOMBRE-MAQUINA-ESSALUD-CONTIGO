@@ -2,16 +2,18 @@ import { Pool } from 'pg';
 import path from 'path';
 import dotenv from 'dotenv';
 
-// Cargar variables de entorno desde el archivo .env raíz
+// Cargar variables de entorno desde el archivo .env raíz y local
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config(); // Fallback a directorio actual
 
-const connectionString = 
-  process.env.DATABASE_URL || 
-  'postgresql://postgres:kKmpObbYG0XY5VSa@db.liozqlizpovzlgmzjiic.supabase.co:5432/postgres';
+let connectionString = process.env.DATABASE_URL || '';
 
-if (!connectionString) {
-  console.warn('⚠️ Advertencia: DATABASE_URL no encontrada en variables de entorno.');
+// En Vercel / AWS Lambda la red es estrictamente IPv4.
+// La conexión directa 'db.liozqlizpovzlgmzjiic.supabase.co' es IPv6-only y produce 'ENOTFOUND'.
+// Si no hay DATABASE_URL o si apunta al host directo IPv6, usar el Supabase Connection Pooler IPv4 oficial:
+if (!connectionString || connectionString.includes('db.liozqlizpovzlgmzjiic.supabase.co')) {
+  connectionString = 'postgresql://postgres.liozqlizpovzlgmzjiic:kKmpObbYG0XY5VSa@aws-1-us-west-2.pooler.supabase.com:6543/postgres';
 }
 
 export const pool = new Pool({
